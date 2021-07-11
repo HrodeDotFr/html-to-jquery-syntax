@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>HTML to Jquery syntax</title>
+
+  <link rel="icon" href="favicon.ico" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+</head>
+
+<body>
+  <div>
+    <label>HTML</label>
+    <textarea id="src" style="width: 100%;" autocomplete="off" placeholder="&lt;p&gt;Hello world&lt;/p&gt;"></textarea>
+  </div>
+  <div>
+    <label>Beautify</label>
+    <input type="checkbox" autocomplete="off" id="beautify" checked="">
+  </div>
+  <button id="convert">Convert</button>
+  <pre id="dest">JS code will appear here</pre>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    var convert = function(html, indent) {
+      var el = $(html).filter(function(index) {
+        return this.nodeType !== 3;
+      });
+      if (el.length === 0) {
+        return false;
+      }
+      var code = "";
+
+      function recursive(el, main, gap) {
+        el.each((index, element) => {
+          if (indent) {
+            if (!main) {
+              code += '\n';
+            }
+            code += ("    ").repeat(gap);
+          }
+          if (!main) {
+            code += '.append(';
+          }
+          code += '$("<' + element.tagName.toLowerCase() + '>")';
+          $.each(element.attributes, function() {
+            if (this.specified) {
+              code += '.attr("' + this.name + '", "' + this.value + '")';
+            }
+          });
+          var text = $(element).contents().filter((i, el) => el.nodeType === 3).text();
+          if (text.length) {
+            code += '.text("' + text + '")';
+          }
+          var children = $(element).children();
+          if (children.length > 0) {
+            recursive(children, false, gap + 1);
+            if (indent) {
+              code += '\n';
+              code += ("    ").repeat(gap);
+            }
+          }
+          if (!main) {
+            code += ')';
+          }
+        });
+      }
+      recursive(el, el.length === 1, 0);
+      return code.trim();
+    };
+
+    $(function() {
+      $('#convert').on('click', function() {
+        var code = convert($('#src').val(), $('#beautify').prop('checked'));
+        if (code === false) {
+          code = "Badly formed HTML";
+        }
+        $('#dest').text(code);
+      });
+    });
+  </script>
+</body>
+
+</html>
