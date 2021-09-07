@@ -47,7 +47,11 @@
           code += '$("<' + element.tagName.toLowerCase() + '>")';
           $.each(element.attributes, function() {
             if (this.specified) {
-              code += '.attr("' + this.name + '", "' + this.value + '")';
+              if(this.name === "class") {
+                code += '.addClass("' + this.value + '")';
+              } else {
+                code += '.attr("' + this.name + '", "' + this.value + '")';
+              }
             }
           });
           var text = $(element).contents().filter((i, el) => el.nodeType === 3).text().trim();
